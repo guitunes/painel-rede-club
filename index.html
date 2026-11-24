@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rede · vendas e recebimentos · Club</title>
+<style>
+  :root { --ink:#1d1d1f; --mute:#6b6b70; --line:#e7e5e0; --bg:#fbfaf7; --card:#ffffff; --accent:#F57135; --ok:#2f7d5b; --warn:#b45309; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width:1080px; margin:0 auto; padding:32px 20px 56px; }
+  header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:12px; border-bottom:2px solid var(--ink); padding-bottom:14px; }
+  h1 { font-size:22px; margin:0; font-weight:700; }
+  .sub { color:var(--mute); font-size:14px; margin-top:4px; }
+  .atual { font-size:13px; color:var(--mute); text-align:right; }
+  .status { display:inline-block; margin-top:4px; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:600; }
+  .status.ok { background:#e6f2ec; color:var(--ok); }
+  .status.barra { background:#fdecec; color:#b42318; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px,1fr)); gap:14px; margin:22px 0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .card .rot { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); font-weight:600; }
+  .card .num { font-size:26px; font-weight:700; margin-top:6px; font-variant-numeric:tabular-nums; }
+  .card .nota { font-size:12px; color:var(--mute); margin-top:6px; line-height:1.4; }
+  .card.destaque { border-color:var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+  h2 { font-size:15px; margin:26px 0 10px; font-weight:700; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; font-size:14px; }
+  th, td { padding:9px 12px; text-align:right; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  th:first-child, td:first-child { text-align:left; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--mute); background:#f5f3ee; }
+  tr:last-child td { border-bottom:0; }
+  .barras { display:flex; align-items:flex-end; gap:4px; height:120px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; }
+  .barras div { flex:1; background:var(--accent); opacity:.85; border-radius:3px 3px 0 0; min-height:2px; position:relative; }
+  .barras div span { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); font-size:10px; color:var(--mute); white-space:nowrap; }
+  .eixo { display:flex; gap:4px; font-size:10px; color:var(--mute); margin-top:4px; }
+  .eixo div { flex:1; text-align:center; }
+  footer { margin-top:28px; font-size:12px; color:var(--mute); line-height:1.5; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Rede · vendas e recebimentos</h1>
+      <div class="sub">The Beat Life Club · matriz 106338986 e filial 107131811 · dados da API oficial da Rede</div>
+    </div>
+    <div class="atual">
+      <div>Atualizado em <strong id="gerado"></strong></div>
+      <span id="portao" class="status ok"></span>
+    </div>
+  </header>
+
+  <section class="grid" id="cards"></section>
+
+  <h2>Vendas aprovadas por dia (<span id="periodoVendas"></span>)</h2>
+  <div class="barras" id="barras"></div>
+  <div class="eixo" id="eixo"></div>
+
+  <h2>Recebimentos por status</h2>
+  <table>
+    <thead><tr><th>Status</th><th>Itens</th><th>Líquido (R$)</th><th>Leitura</th></tr></thead>
+    <tbody id="tab-receb"></tbody>
+  </table>
+
+  <h2>Por unidade (vendas aprovadas)</h2>
+  <table>
+    <thead><tr><th>Unidade</th><th>Vendas</th><th>Bruto (R$)</th></tr></thead>
+    <tbody id="tab-pv"></tbody>
+  </table>
+
+  <footer>
+    Valores em reais, com centavos cortados onde a tabela pede. Vendas por data da venda; recebimentos por data do pagamento.
+    Pix não aparece na API de vendas: venda Pix só entra pelo portal. Cobrança pendente vem com valor zero na API, por isso fica contada à parte e fora dos totais.
+  </footer>
+</main>
+
+<script>
+const DADOS = {"resumo": {"gerado_em": "2026-11-24T09:29-03:00", "vendas": {"periodo": ["2026-11-01", "2026-11-23"], "aprovadas": 19, "bruto_aprovado": 281968.37}, "recebimentos": {"periodo": ["2026-11-01", "2026-12-31"], "pagos": 38, "liquido_pago": 334858.55, "a_receber_pendente": 3, "liquido_a_receber_pendente": 34636.81, "cobranca_pendente_itens": 6, "cobranca_pendente_valor_api": 0}, "contagem": {"vendas_matriz": 19, "vendas_filial": 0, "pagamentos_matriz": 46, "pagamentos_filial": 1}, "portao": "PASSOU", "motivos": []}, "vendas": [{"pv": "matriz", "data": "2026-11-23", "status": "APPROVED", "bruto": 30000.0}, {"pv": "matriz", "data": "2026-11-23", "status": "APPROVED", "bruto": 30000.0}, {"pv": "matriz", "data": "2026-11-19", "status": "APPROVED", "bruto": 9000.0}, {"pv": "matriz", "data": "2026-11-18", "status": "APPROVED", "bruto": 3200.0}, {"pv": "matriz", "data": "2026-11-16", "status": "APPROVED", "bruto": 3200.0}, {"pv": "matriz", "data": "2026-11-16", "status": "APPROVED", "bruto": 14400.0}, {"pv": "matriz", "data": "2026-11-13", "status": "APPROVED", "bruto": 4800.0}, {"pv": "matriz", "data": "2026-11-11", "status": "APPROVED", "bruto": 25200.0}, {"pv": "matriz", "data": "2026-11-11", "status": "APPROVED", "bruto": 16800.0}, {"pv": "matriz", "data": "2026-11-06", "status": "APPROVED", "bruto": 33000.0}, {"pv": "matriz", "data": "2026-11-06", "status": "APPROVED", "bruto": 800.0}, {"pv": "matriz", "data": "2026-11-05", "status": "APPROVED", "bruto": 3200.0}, {"pv": "matriz", "data": "2026-11-04", "status": "APPROVED", "bruto": 26101.37}, {"pv": "matriz", "data": "2026-11-04", "status": "APPROVED", "bruto": 349.0}, {"pv": "matriz", "data": "2026-11-03", "status": "APPROVED", "bruto": 8400.0}, {"pv": "matriz", "data": "2026-11-03", "status": "APPROVED", "bruto": 33000.0}, {"pv": "matriz", "data": "2026-11-03", "status": "APPROVED", "bruto": 29200.0}, {"pv": "matriz", "data": "2026-11-02", "status": "APPROVED", "bruto": 2318.0}, {"pv": "matriz", "data": "2026-11-02", "status": "APPROVED", "bruto": 9000.0}], "pagamentos": [{"pv": "matriz", "data": "2026-11-06", "status": "PAID", "liquido": 5658.58}, {"pv": "matriz", "data": "2026-11-06", "status": "PAID", "liquido": 4099.62}, {"pv": "matriz", "data": "2026-11-06", "status": "PAID", "liquido": 7293.13}, {"pv": "matriz", "data": "2026-11-05", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-05", "status": "PAID", "liquido": 9061.92}, {"pv": "matriz", "data": "2026-11-04", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-04", "status": "PAID", "liquido": 2196.23}, {"pv": "matriz", "data": "2026-11-04", "status": "PAID", "liquido": 4920.5}, {"pv": "matriz", "data": "2026-11-04", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-04", "status": "PAID", "liquido": 1945.7}, {"pv": "matriz", "data": "2026-11-03", "status": "PAID", "liquido": 8199.24}, {"pv": "matriz", "data": "2026-11-03", "status": "PAID", "liquido": 36149.64}, {"pv": "matriz", "data": "2026-11-03", "status": "PAID", "liquido": 40507.43}, {"pv": "matriz", "data": "2026-11-03", "status": "PAID", "liquido": 4836.97}, {"pv": "matriz", "data": "2026-11-13", "status": "PAID", "liquido": 6576.98}, {"pv": "matriz", "data": "2026-11-13", "status": "PAID", "liquido": 4810.48}, {"pv": "matriz", "data": "2026-11-13", "status": "PAID", "liquido": 588.06}, {"pv": "matriz", "data": "2026-11-13", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-12", "status": "PAID", "liquido": 3081.4}, {"pv": "matriz", "data": "2026-11-12", "status": "PAID", "liquido": 586.68}, {"pv": "matriz", "data": "2026-11-12", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-12", "status": "PAID", "liquido": 1220.13}, {"pv": "matriz", "data": "2026-11-11", "status": "PAID", "liquido": 4057.97}, {"pv": "matriz", "data": "2026-11-11", "status": "PAID", "liquido": 7216.73}, {"pv": "matriz", "data": "2026-11-11", "status": "PAID", "liquido": 4644.43}, {"pv": "matriz", "data": "2026-11-10", "status": "PAID", "liquido": 2188.09}, {"pv": "matriz", "data": "2026-11-10", "status": "PAID", "liquido": 2460.25}, {"pv": "matriz", "data": "2026-11-10", "status": "PAID", "liquido": 2236.89}, {"pv": "matriz", "data": "2026-11-10", "status": "PAID", "liquido": 2460.25}, {"pv": "matriz", "data": "2026-11-09", "status": "PAID", "liquido": 28548.82}, {"pv": "matriz", "data": "2026-11-09", "status": "PAID", "liquido": 13629.79}, {"pv": "matriz", "data": "2026-11-09", "status": "PAID", "liquido": 2212.49}, {"pv": "matriz", "data": "2026-11-24", "status": "PENDING", "liquido": 6222.64}, {"pv": "matriz", "data": "2026-11-24", "status": "PENDING", "liquido": 18615.63}, {"pv": "matriz", "data": "2026-11-24", "status": "PENDING", "liquido": 9798.54}, {"pv": "matriz", "data": "2026-11-23", "status": "PAID", "liquido": 24254.46}, {"pv": "matriz", "data": "2026-11-23", "status": "PAID", "liquido": 33145.57}, {"pv": "matriz", "data": "2026-11-23", "status": "PAID", "liquido": 4880.5}, {"pv": "matriz", "data": "2026-11-19", "status": "CHARGED", "liquido": 0.0}, {"pv": "matriz", "data": "2026-11-19", "status": "PAID", "liquido": 1397.96}, {"pv": "matriz", "data": "2026-11-18", "status": "PAID", "liquido": 2440.25}, {"pv": "matriz", "data": "2026-11-18", "status": "PAID", "liquido": 4920.5}, {"pv": "matriz", "data": "2026-11-17", "status": "PAID", "liquido": 4920.5}, {"pv": "matriz", "data": "2026-11-16", "status": "PAID", "liquido": 21613.0}, {"pv": "matriz", "data": "2026-11-16", "status": "PAID", "liquido": 3497.14}, {"pv": "matriz", "data": "2026-11-16", "status": "PAID", "liquido": 19960.02}, {"pv": "filial", "data": "2026-11-03", "status": "PAID", "liquido": 2440.25}]};
+
+const brl = v => (v == null ? '-' : 'R$ ' + Math.trunc(v).toLocaleString('pt-BR'));
+const num = v => (v == null ? '-' : Math.trunc(v).toLocaleString('pt-BR'));
+const ddmm = iso => iso ? iso.slice(8,10) + '/' + iso.slice(5,7) : '';
+
+function render(d) {
+  const r = d.resumo, v = d.vendas, p = d.pagamentos;
+  document.getElementById('gerado').textContent = r.gerado_em.replace('T', ' ');
+  const ok = r.portao === 'PASSOU';
+  const portao = document.getElementById('portao');
+  portao.textContent = ok ? 'Dados conferidos' : 'Atualização barrada';
+  portao.className = 'status ' + (ok ? 'ok' : 'barra');
+
+  const aprov = v.filter(x => x.status === 'APPROVED');
+  const pagos = p.filter(x => x.status === 'PAID');
+  const pend = p.filter(x => x.status === 'PENDING');
+  const cobr = p.filter(x => x.status === 'CHARGED');
+  const R = r.recebimentos;
+
+  const cards = [
+    { rot:'Vendas aprovadas', num: num(aprov.length), nota: `${ddmm(r.vendas.periodo[0])} a ${ddmm(r.vendas.periodo[1])}` },
+    { rot:'Bruto vendido', num: brl(r.vendas.bruto_aprovado), nota:'valor original das vendas aprovadas' },
+    { rot:'Recebido', num: brl(R.liquido_pago), nota:`${num(R.pagos)} pagamentos já na conta, líquido`, destaque:true },
+    { rot:'A receber', num: brl(R.liquido_a_receber_pendente), nota:`${num(R.a_receber_pendente)} pagamentos pendentes` },
+    { rot:'Cobrança pendente', num: num(R.cobranca_pendente_itens), nota:'itens sem valor na API, fora dos totais' },
+  ];
+  document.getElementById('cards').innerHTML = cards.map(c =>
+    `<div class="card${c.destaque ? ' destaque' : ''}"><div class="rot">${c.rot}</div><div class="num">${c.num}</div><div class="nota">${c.nota}</div></div>`
+  ).join('');
+
+  // vendas aprovadas por dia
+  const porDia = {};
+  aprov.forEach(x => { porDia[x.data] = (porDia[x.data] || 0) + (x.bruto || 0); });
+  const dias = Object.keys(porDia).sort();
+  const max = Math.max(1, ...Object.values(porDia));
+  document.getElementById('periodoVendas').textContent = `${ddmm(r.vendas.periodo[0])} a ${ddmm(r.vendas.periodo[1])}`;
+  document.getElementById('barras').innerHTML = dias.map(dia =>
+    `<div style="height:${Math.max(2, porDia[dia] / max * 100)}%" title="${ddmm(dia)}: ${brl(porDia[dia])}"><span>${Math.round(porDia[dia]/1000)}k</span></div>`
+  ).join('');
+  document.getElementById('eixo').innerHTML = dias.map(dia => `<div>${ddmm(dia)}</div>`).join('');
+
+  // recebimentos por status
+  const soma = arr => arr.reduce((s, x) => s + (x.liquido || 0), 0);
+  const linhasR = [
+    ['Pago (na conta)', pagos.length, soma(pagos), 'entrou no caixa'],
+    ['Pendente', pend.length, soma(pend), 'ainda vai cair'],
+    ['Cobrança pendente', cobr.length, 0, 'valor não vem da API; conferir no portal'],
+  ];
+  document.getElementById('tab-receb').innerHTML = linhasR.map(l =>
+    `<tr><td>${l[0]}</td><td>${num(l[1])}</td><td>${l[2] ? brl(l[2]) : '-'}</td><td>${l[3]}</td></tr>`).join('');
+
+  // por unidade
+  const pvs = {};
+  aprov.forEach(x => { pvs[x.pv] = pvs[x.pv] || { n:0, b:0 }; pvs[x.pv].n++; pvs[x.pv].b += x.bruto || 0; });
+  const nomes = { matriz: 'Matriz (106338986)', filial: 'Filial (107131811)' };
+  document.getElementById('tab-pv').innerHTML = Object.keys(pvs).map(k =>
+    `<tr><td>${nomes[k] || k}</td><td>${num(pvs[k].n)}</td><td>${brl(pvs[k].b)}</td></tr>`).join('') ||
+    '<tr><td colspan="3">Sem vendas aprovadas no período</td></tr>';
+}
+
+render(DADOS);
+</script>
+</body>
+</html>
